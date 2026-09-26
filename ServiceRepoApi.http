@@ -1,0 +1,74 @@
+# Test requests (Visual Studio / VS Code REST Client). Expected result on each line above the request.
+@host = https://localhost:7081
+
+### 200 - all products, sorted by name
+GET {{host}}/api/products
+
+### 200 - one product
+GET {{host}}/api/products/1
+
+### 404
+GET {{host}}/api/products/999
+
+### 201 - Location header points to the new product; name saved as "Monitor"
+POST {{host}}/api/products
+Content-Type: application/json
+
+{ "name": "  Monitor  ", "description": "27 inch", "price": 299.00, "stock": 5 }
+
+### 201 - client-supplied id and createdAt are ignored
+POST {{host}}/api/products
+Content-Type: application/json
+
+{ "id": 1, "name": "Cable", "description": "USB-C", "price": 9.99, "stock": 0, "createdAt": "2000-01-01T00:00:00" }
+
+### 409 - duplicate name (after trimming)
+POST {{host}}/api/products
+Content-Type: application/json
+
+{ "name": " Mouse", "description": "Another mouse", "price": 10.00, "stock": 1 }
+
+### 400 - validation (missing name, price 0)
+POST {{host}}/api/products
+Content-Type: application/json
+
+{ "description": "No name", "price": 0, "stock": 1 }
+
+### 204 - update every field; createdAt in the body is ignored
+PUT {{host}}/api/products/1
+Content-Type: application/json
+
+{ "id": 1, "name": "Keyboard", "description": "Mechanical keyboard (updated)", "price": 89.99, "stock": 20, "createdAt": "2000-01-01T00:00:00" }
+
+### 400 - route id and body id don't match
+PUT {{host}}/api/products/1
+Content-Type: application/json
+
+{ "id": 2, "name": "Keyboard", "description": "x", "price": 89.99, "stock": 20 }
+
+### 409 - rename to an existing name
+PUT {{host}}/api/products/1
+Content-Type: application/json
+
+{ "id": 1, "name": "Mouse", "description": "x", "price": 89.99, "stock": 20 }
+
+### 404 - update a product that doesn't exist
+PUT {{host}}/api/products/999
+Content-Type: application/json
+
+{ "id": 999, "name": "Ghost", "description": "x", "price": 1.00, "stock": 0 }
+
+### 409 - product still has stock
+DELETE {{host}}/api/products/1
+
+### 204 - set stock to 0 ...
+PUT {{host}}/api/products/2
+Content-Type: application/json
+
+{ "id": 2, "name": "Mouse", "description": "Wireless mouse", "price": 29.50, "stock": 0 }
+
+### 204 - ... then delete
+DELETE {{host}}/api/products/2
+
+### 404 - delete a product that doesn't exist
+DELETE {{host}}/api/products/999
